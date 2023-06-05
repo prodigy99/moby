@@ -170,7 +170,7 @@ FROM base AS tomll
 ARG GOTOML_VERSION=v1.8.1
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-        GOBIN=/build/ GO111MODULE=on go install "github.com/pelletier/go-toml/cmd/tomll@${GOTOML_VERSION}" \
+        GOBIN=/build/ GO111MODULE=on GOPROXY=https://goproxy.cn  go install "github.com/pelletier/go-toml/cmd/tomll@${GOTOML_VERSION}" \
      && /build/tomll --help
 
 FROM base AS gowinres
@@ -178,7 +178,7 @@ FROM base AS gowinres
 ARG GOWINRES_VERSION=v0.3.0
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-        GOBIN=/build/ GO111MODULE=on go install "github.com/tc-hib/go-winres@${GOWINRES_VERSION}" \
+        GOBIN=/build/ GO111MODULE=on GOPROXY=https://goproxy.cn go install "github.com/tc-hib/go-winres@${GOWINRES_VERSION}" \
      && /build/go-winres --help
 
 # containerd
@@ -226,21 +226,21 @@ FROM base AS golangci_lint
 ARG GOLANGCI_LINT_VERSION=v1.51.2
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-        GOBIN=/build/ GO111MODULE=on go install "github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}" \
+        GOBIN=/build/ GO111MODULE=on GOPROXY=https://goproxy.cn go install "github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}" \
      && /build/golangci-lint --version
 
 FROM base AS gotestsum
 ARG GOTESTSUM_VERSION=v1.8.2
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-        GOBIN=/build/ GO111MODULE=on go install "gotest.tools/gotestsum@${GOTESTSUM_VERSION}" \
+        GOBIN=/build/ GO111MODULE=on GOPROXY=https://goproxy.cn go install "gotest.tools/gotestsum@${GOTESTSUM_VERSION}" \
      && /build/gotestsum --version
 
 FROM base AS shfmt
 ARG SHFMT_VERSION=v3.6.0
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-        GOBIN=/build/ GO111MODULE=on go install "mvdan.cc/sh/v3/cmd/shfmt@${SHFMT_VERSION}" \
+        GOBIN=/build/ GO111MODULE=on GOPROXY=https://goproxy.cn go install "mvdan.cc/sh/v3/cmd/shfmt@${SHFMT_VERSION}" \
      && /build/shfmt --version
 
 # dockercli
@@ -357,6 +357,7 @@ RUN --mount=type=cache,sharing=locked,id=moby-rootlesskit-aptlib,target=/var/lib
         apt-get update && xx-apt-get install -y --no-install-recommends \
             gcc libc6-dev
 ENV GO111MODULE=on
+ENV GOPROXY=https://goproxy.cn
 ARG DOCKER_STATIC
 RUN --mount=from=rootlesskit-src,src=/usr/src/rootlesskit,rw \
     --mount=type=cache,target=/go/pkg/mod \
@@ -392,7 +393,9 @@ RUN --mount=type=cache,sharing=locked,id=moby-crun-aptlib,target=/var/lib/apt \
             libyajl-dev \
             python3 \
             ;
+
 RUN --mount=type=tmpfs,target=/tmp/crun-build \
+    git config --global url."https://ghproxy.com/https://github.com/".insteadOf https://github.com && \
     git clone https://github.com/containers/crun.git /tmp/crun-build && \
     cd /tmp/crun-build && \
     git checkout -q "${CRUN_VERSION}" && \
